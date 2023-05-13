@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:shelf/shelf.dart';
+import '../models/post.dart';
 
 Response rootHandler(Request _) {
   return Response.ok('server is working.');
@@ -11,9 +12,10 @@ Future<Response> findPostHandler(Request _, String id) async {
     File jsonFile = File('bin/posts.txt');
     final List posts = json.decode(await jsonFile.readAsString());
     final Map postMap = posts.firstWhere((post) => post["id"] == id);
+    final Post post = Post.fromJson(postMap);
 
     return Response.ok(
-      json.encode(postMap),
+      json.encode(post.toMap()),
       headers: {'Content-Type': 'Application/json'},
     );
   } catch (e) {
@@ -38,16 +40,17 @@ Future<Response> createPostHandler(Request req) async {
 
     final body = await req.readAsString();
     final Map jsonBody = json.decode(body);
+    var postKeys = jsonBody.keys.toString();
 
-    if (jsonBody.containsKey("id") &&
-        jsonBody.containsKey("content") &&
-        jsonBody.containsKey("name")) {
-      posts.add(jsonBody);
+    final Post post = Post.fromJson(jsonBody);
+
+    if (postKeys == "(id, content, name)") {
+      posts.add(post.toMap());
 
       await jsonFile.writeAsString(json.encode(posts));
 
       return Response.ok(
-        json.encode(jsonBody),
+        json.encode(post.toMap()),
         headers: {'Content-Type': 'Application/json'},
       );
     } else {
@@ -65,13 +68,15 @@ Future<Response> deletePostHandler(Request _, String id) async {
     File jsonFile = File('bin/posts.txt');
     final List posts = json.decode(await jsonFile.readAsString());
     final Map postMap = posts.firstWhere((post) => post["id"] == id);
+    final Post post = Post.fromJson(postMap);
+    final postAsMap = post.toMap();
 
-    posts.remove(postMap);
+    posts.remove(postAsMap);
 
     await jsonFile.writeAsString(json.encode(posts));
 
     return Response.ok(
-      json.encode(postMap),
+      json.encode(postAsMap),
       headers: {'Content-Type': 'Application/json'},
     );
   } catch (e) {
