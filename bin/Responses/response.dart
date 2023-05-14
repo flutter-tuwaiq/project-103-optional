@@ -11,13 +11,21 @@ List posts = [];
 addPostResponse(Request req) async {
   try {
     File myfile = File("posts.txt");
-    Map body = json.decode(await req.readAsString());
+    Map jsonBody = json.decode(await req.readAsString());
+    String filecontent =  await myfile.readAsString();
+    if(filecontent.isNotEmpty){
+    posts = json.decode(filecontent);
+    }
+    if (jsonBody.containsKey("id") &&
+        jsonBody.containsKey("content") &&
+        jsonBody.containsKey("name")) {
+      posts.add(Post.fromJson(json: jsonBody).toJson());
+      myfile.writeAsString(json.encode(posts));
 
-    posts.add(body);
-    myfile.writeAsString(json.encode(posts));
-
-    return Response.ok("post added successfully...");
+      return Response.ok("post added successfully...");
+    }
   } catch (error) {
+
     return Response.notFound('post not found');
   }
 }

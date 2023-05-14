@@ -24,4 +24,11 @@ class Post {
       'name': name,
     };
   }
+
+  Map toJson() => 
+     {
+      "id": id,
+      'content': content,
+      'name': name,
+    };
 }
